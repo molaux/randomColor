@@ -1,5 +1,6 @@
 // randomColor by David Merfield under the CC0 license
 // https://github.com/davidmerfield/randomColor/
+var { alea } = require('seedrandom')
 
 ;(function(root, factory) {
 
@@ -41,14 +42,9 @@
 
     // Check if there is a seed and ensure it's an
     // integer. Otherwise, reset the seed value.
-    if (options.seed !== undefined && options.seed !== null && options.seed === parseInt(options.seed, 10)) {
-      seed = options.seed;
-
+    if (options.seed !== undefined && options.seed !== null && (options.seed === parseInt(options.seed, 10) || typeof options.seed === 'string')) {
+      seed = seed === null ? new alea(options.seed) : seed;
     // A string was passed as a seed
-    } else if (typeof options.seed === 'string') {
-      seed = stringToInteger(options.seed);
-
-    // Something was passed as a seed but it wasn't an integer or string
     } else if (options.seed !== undefined && options.seed !== null) {
       throw new TypeError('The seed value must be an integer or string');
 
@@ -68,12 +64,6 @@
       options.count = null;
 
       while (totalColors > colors.length) {
-
-        // Since we're generating multiple colors,
-        // incremement the seed. Otherwise we'd just
-        // generate the same color each time...
-        if (seed && options.seed) options.seed += 1;
-
         colors.push(randomColor(options));
       }
 
@@ -277,16 +267,7 @@
   }
 
   function randomWithin (range) {
-    if (seed === null) {
-      return Math.floor(range[0] + Math.random()*(range[1] + 1 - range[0]));
-    } else {
-      //Seeded random algorithm from http://indiegamr.com/generate-repeatable-random-numbers-in-js/
-      var max = range[1] || 1;
-      var min = range[0] || 0;
-      seed = (seed * 9301 + 49297) % 233280;
-      var rnd = seed / 233280.0;
-      return Math.floor(min + rnd * (max - min));
-    }
+    return Math.floor(range[0] + (seed === null ?  Math.random() : seed()) * (range[1] + 1 - range[0]));
   }
 
   function HSVtoHex (hsv){
